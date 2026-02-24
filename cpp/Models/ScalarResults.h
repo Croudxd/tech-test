@@ -29,11 +29,15 @@ public:
         using reference = ScalarResult&;
 
         Iterator() = default;
+        Iterator(const ScalarResults* parent, size_t index) 
+            : parent_(parent), index_(index) {}
 
-        // Iterator must be constructable from ScalarResults parent
         Iterator& operator++();
         ScalarResult operator*() const;
         bool operator!=(const Iterator& other) const;
+    private:
+        const ScalarResults* parent_ = nullptr;
+        size_t index_ = 0;
     };
 
     Iterator begin() const;
@@ -42,6 +46,7 @@ public:
 private:
     std::map<std::string, double> results_;
     std::map<std::string, std::string> errors_;
+    std::vector<std::string> keys_;
 };
 
 #endif // SCALARRESULTS_H

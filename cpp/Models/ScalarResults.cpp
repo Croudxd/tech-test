@@ -29,29 +29,37 @@ bool ScalarResults::containsTrade(const std::string& tradeId) const {
 }
 
 void ScalarResults::addResult(const std::string& tradeId, double result) {
+    if (!containsTrade(tradeId)) {
+        keys_.push_back(tradeId);
+    }
     results_[tradeId] = result;
 }
 
 void ScalarResults::addError(const std::string& tradeId, const std::string& error) {
+    if (!containsTrade(tradeId)) {
+        keys_.push_back(tradeId);
+    }
     errors_[tradeId] = error;
 }
 
 ScalarResults::Iterator& ScalarResults::Iterator::operator++() {
-    throw std::runtime_error("Iterator not implemented");
+    index_++;
+    return *this;
 }
 
 ScalarResult ScalarResults::Iterator::operator*() const {
-    throw std::runtime_error("Iterator not implemented");
+    std::string currentTradeId = parent_->keys_[index_];
+    return parent_->operator[](currentTradeId).value();
 }
 
 bool ScalarResults::Iterator::operator!=(const Iterator& other) const {
-    throw std::runtime_error("Iterator not implemented");
+    return index_ != other.index_;
 }
 
 ScalarResults::Iterator ScalarResults::begin() const {
-    throw std::runtime_error("Not implemented");
+    return Iterator(this, 0);
 }
 
 ScalarResults::Iterator ScalarResults::end() const {
-    throw std::runtime_error("Not implemented");
+    return Iterator(this, keys_.size());
 }
