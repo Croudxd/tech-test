@@ -1,8 +1,14 @@
 #include "SerialPricer.h"
+#include "../Pricers/CorpBondPricingEngine.h"
+#include "../Pricers/FxPricingEngine.h"
+#include "../Pricers/GovBondPricingEngine.h"
 #include <stdexcept>
 
 SerialPricer::~SerialPricer() {
-
+    for (auto& pair : pricers_) {
+        delete pair.second;
+    }
+    pricers_.clear();
 }
 
 void SerialPricer::loadPricers() {
@@ -11,7 +17,18 @@ void SerialPricer::loadPricers() {
     PricingEngineConfig pricerConfig = pricingConfigLoader.loadConfig();
     
     for (const auto& configItem : pricerConfig) {
-        throw std::runtime_error("Not implemented");
+        std::string typeName = configItem.getTypeName();
+        std::string tradeType = configItem.getTradeType();
+
+        if (typeName == "HmxLabs.TechTest.Pricers.GovBondPricingEngine") {
+            pricers_[tradeType] = new GovBondPricingEngine();
+        } 
+        else if (typeName == "HmxLabs.TechTest.Pricers.CorpBondPricingEngine") {
+            pricers_[tradeType] = new CorpBondPricingEngine();
+        } 
+        else if (typeName == "HmxLabs.TechTest.Pricers.FxPricingEngine") {
+            pricers_[tradeType] = new FxPricingEngine();
+        }
     }
 }
 
