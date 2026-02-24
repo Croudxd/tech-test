@@ -6,6 +6,16 @@
 #include <iomanip>
 #include <chrono>
 
+//Small trim function to cut off any unseen special characters. 
+//Okay so assuming that we are not sure if every data point has a trail, the below would be safest.
+//perhaps we could do this faster by just cuttong off the end entity of the string however, we new definitvely
+//but that speed i think would be very small.
+std::string trim(const std::string& str) 
+{
+    auto end = str.find_last_not_of(" \t\r\n");
+    return (end == std::string::npos) ? "" : str.substr(0, end + 1);
+}
+
 BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     std::vector<std::string> items;
     std::stringstream ss(line);
@@ -15,11 +25,22 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
         items.push_back(item);
     }
     
-    if (items.size() < 7) {
+    if (items.size() < 7) { 
         throw std::runtime_error("Invalid line format");
     }
-    
-    BondTrade* trade = new BondTrade(items[6]);
+    BondTrade* trade;
+    //Assuming only gov/corp
+    // Pretty crap check but again this assuming we have correct data and only gov/corp
+    if (items[6][0] == 'C')
+    {
+        trade = new BondTrade(trim(items[6]), BondTrade::CorpBondTradeType);
+    }
+    else 
+    {
+        trade = new BondTrade(trim(items[6]));
+    }
+
+    // Always creating gov bonds.
     
     std::tm tm = {};
     std::istringstream dateStream(items[1]);
@@ -62,7 +83,7 @@ std::vector<ITrade*> BondTradeLoader::loadTrades() {
     
     std::vector<ITrade*> result;
     for (size_t i = 0; i < tradeList.size(); ++i) {
-        result.push_back(tradeList[i]);
+        result.push_back(tradeList[i]); // std::move here?
     }
     return result;
 }

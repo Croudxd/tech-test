@@ -6,6 +6,7 @@
 class BondTradeList : public TradeList {
 public:
     BondTradeList() = default;
+private:
 };
 
 #endif // BONDTRADELIST_H
