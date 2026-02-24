@@ -11,6 +11,11 @@ public:
     virtual std::vector<ITrade*> loadTrades() = 0;
     virtual std::string getDataFile() const = 0;
     virtual void setDataFile(const std::string& file) = 0;
+    std::string trim(const std::string& str) 
+    {
+        auto end = str.find_last_not_of(" \t\r\n\xC2");
+        return (end == std::string::npos) ? "" : str.substr(0, end + 1);
+    }
 };
 
 #endif // ITRADELOADER_H
