@@ -4,6 +4,7 @@
 #include "../Models/ITrade.h"
 #include <vector>
 #include <string>
+#include <functional>
 
 class ITradeLoader {
 public:
@@ -16,6 +17,7 @@ public:
         auto end = str.find_last_not_of(" \t\r\n\xC2");
         return (end == std::string::npos) ? "" : str.substr(0, end + 1);
     }
+    virtual void streamTrades(std::function<void(ITrade*)> onTradeLoaded) = 0;
 };
 
 #endif // ITRADELOADER_H

@@ -5,16 +5,12 @@
 #include <ctime>
 #include <iomanip>
 #include <chrono>
+#include <functional>
 
 //Small trim function to cut off any unseen special characters. 
 //Okay so assuming that we are not sure if every data point has a trail, the below would be safest.
 //perhaps we could do this faster by just cuttong off the end entity of the string however, we new definitvely
 //but that speed i think would be very small.
-std::string trim(const std::string& str) 
-{
-    auto end = str.find_last_not_of(" \t\r\n");
-    return (end == std::string::npos) ? "" : str.substr(0, end + 1);
-}
 
 BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     std::vector<std::string> items;
@@ -83,7 +79,7 @@ std::vector<ITrade*> BondTradeLoader::loadTrades() {
     
     std::vector<ITrade*> result;
     for (size_t i = 0; i < tradeList.size(); ++i) {
-        result.push_back(tradeList[i]); // std::move here?
+        result.push_back(tradeList[i]); 
     }
     return result;
 }
@@ -94,4 +90,27 @@ std::string BondTradeLoader::getDataFile() const {
 
 void BondTradeLoader::setDataFile(const std::string& file) {
     dataFile_ = file;
+}
+
+
+
+void BondTradeLoader::streamTrades(std::function<void(ITrade*)> onTradeLoaded) {
+    std::ifstream stream(dataFile_);
+    if (!stream.is_open()) {
+        throw std::runtime_error("Cannot open file: " + dataFile_);
+    }
+    
+    std::string line;
+    bool isFirstLine = true;
+    
+    while (std::getline(stream, line)) {
+        if (isFirstLine) {
+            isFirstLine = false;
+            continue; 
+        }
+        
+        ITrade* trade = createTradeFromLine(line);
+        
+        onTradeLoaded(trade);
+    }
 }

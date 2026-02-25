@@ -19,6 +19,7 @@ public:
     std::vector<ITrade*> loadTrades() override;
     std::string getDataFile() const override;
     void setDataFile(const std::string& file) override;
+    void streamTrades(std::function<void(ITrade*)> onTradeLoaded) override;
 };
 
 #endif // FXTRADELOADER_H

@@ -2,7 +2,6 @@
 #include "../Pricers/CorpBondPricingEngine.h"
 #include "../Pricers/FxPricingEngine.h"
 #include "../Pricers/GovBondPricingEngine.h"
-#include <stdexcept>
 
 SerialPricer::~SerialPricer() {
     for (auto& pair : pricers_) {

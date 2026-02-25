@@ -87,3 +87,19 @@ std::string FxTradeLoader::getDataFile() const {
 void FxTradeLoader::setDataFile(const std::string& file) {
     dataFile_ = file;
 }
+
+void FxTradeLoader::streamTrades(std::function<void(ITrade*)> onTradeLoaded) {
+    std::ifstream stream(dataFile_);
+    
+    if (!stream.is_open()) {
+        throw std::runtime_error("Cannot open file: " + dataFile_);
+    }
+    std::string line;
+    bool isFirstLine = true;
+    while (std::getline(stream, line)) {
+        if (isFirstLine) { isFirstLine = false; continue; }
+        
+        ITrade* trade = createTradeFromLine(line); 
+        onTradeLoaded(trade);
+    }
+}
