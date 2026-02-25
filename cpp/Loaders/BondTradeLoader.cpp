@@ -92,8 +92,6 @@ void BondTradeLoader::setDataFile(const std::string& file) {
     dataFile_ = file;
 }
 
-
-
 void BondTradeLoader::streamTrades(std::function<void(ITrade*)> onTradeLoaded) {
     std::ifstream stream(dataFile_);
     if (!stream.is_open()) {
