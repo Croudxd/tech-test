@@ -23,3 +23,7 @@ Okay, I pretty much understand whats happening here, Basically we are creating a
 
 Question 8:
 So i added the normal loadPricers function. And actually thinking about it now i could somehow put all this logic into one base class that all of the streaming/serial/parallel can inherit from, but repeating works for now. The price function simply calls the loadPricers() and then will generate a futures vector and a mutex for the reciever. We then loop over each trade and call a async thread on it which these thread will then return to the reciever, because there is only one mutex there is no chance of a race condition. Perhaps we could not use a mutex as its slow we could perhaps spin the thread.
+
+Edit:
+
+Tried to refactor all of the code from raw pointers to unique_ptrs, but the tests require the ability to copy, and in instructions i am not allowed to change test code.
