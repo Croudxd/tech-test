@@ -10,13 +10,12 @@ class FxTradeLoader : public ITradeLoader {
 private:
     static constexpr char separator = '\xAC';
     std::string dataFile_;
-
     FxTrade* createTradeFromLine(std::string line); 
-    
+    void loadTradesFromFile(std::string filename, TradeList& tradeList); 
+
 public:
-    // NOTE: These methods are only here to allow the solution to compile prior to the test being completed.
     FxTradeLoader() = default;
-    std::vector<ITrade*> loadTrades() override;
+    TradeList loadTrades() override;
     std::string getDataFile() const override;
     void setDataFile(const std::string& file) override;
     void streamTrades(std::function<void(ITrade*)> onTradeLoaded) override;

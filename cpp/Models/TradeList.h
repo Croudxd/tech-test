@@ -8,7 +8,7 @@
 class TradeList : public ITradeReceiver {
 public:
     TradeList() = default;
-    
+
     void add(ITrade* trade) override {
         trades_.push_back(trade);
     }
@@ -23,7 +23,16 @@ public:
     iterator end() { return trades_.end(); }
     const_iterator begin() const { return trades_.begin(); }
     const_iterator end() const { return trades_.end(); }
-    
+
+    TradeList(const TradeList&) = delete;
+    TradeList& operator=(const TradeList&) = delete;
+
+    TradeList(TradeList&& other) : trades_(std::move(other.trades_)) {}
+    TradeList& operator=(TradeList&& other) {
+        trades_ = std::move(other.trades_);
+        return *this;
+    }
+        
 private:
     std::vector<ITrade*> trades_;
 };

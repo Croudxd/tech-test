@@ -9,17 +9,19 @@
 #include "../Pricers/FxPricingEngine.h"
 #include "../Pricers/GovBondPricingEngine.h"
 #include "../RiskSystem/PricingConfigLoader.h"
+#include <memory>
+#include <utility>
 
-std::vector<ITradeLoader*> StreamingTradeLoader::getTradeLoaders() {
-    std::vector<ITradeLoader*> loaders;
+std::vector<std::unique_ptr<ITradeLoader>> StreamingTradeLoader::getTradeLoaders() {
+    std::vector<std::unique_ptr<ITradeLoader>> loaders;
     
-    BondTradeLoader* bondLoader = new BondTradeLoader();
+    std::unique_ptr<BondTradeLoader> bondLoader = std::make_unique<BondTradeLoader>();
     bondLoader->setDataFile("TradeData/BondTrades.dat");
-    loaders.push_back(bondLoader);
+    loaders.push_back(std::move(bondLoader));
     
-    FxTradeLoader* fxLoader = new FxTradeLoader();
+    std::unique_ptr<FxTradeLoader> fxLoader = std::make_unique<FxTradeLoader>();
     fxLoader->setDataFile("TradeData/FxTrades.dat");
-    loaders.push_back(fxLoader);
+    loaders.push_back(std::move(fxLoader));
     
     return loaders;
 }
@@ -34,26 +36,22 @@ void StreamingTradeLoader::loadPricers() {
         std::string tradeType = configItem.getTradeType();
 
         if (typeName == "HmxLabs.TechTest.Pricers.GovBondPricingEngine") {
-            pricers_[tradeType] = new GovBondPricingEngine();
+            pricers_[tradeType] = std::make_unique<GovBondPricingEngine>();
         } 
         else if (typeName == "HmxLabs.TechTest.Pricers.CorpBondPricingEngine") {
-            pricers_[tradeType] = new CorpBondPricingEngine();
+            pricers_[tradeType] = std::make_unique<CorpBondPricingEngine>();
         } 
         else if (typeName == "HmxLabs.TechTest.Pricers.FxPricingEngine") {
-            pricers_[tradeType] = new FxPricingEngine();
+            pricers_[tradeType] = std::make_unique<FxPricingEngine>();
         }
     }
-}
-
-StreamingTradeLoader::~StreamingTradeLoader() {
-    
 }
 
 void StreamingTradeLoader::loadAndPrice(IScalarResultReceiver* resultReceiver) {
     loadPricers();
     auto loaders = getTradeLoaders();
     
-    for (auto loader : loaders) {
+    for (auto& loader : loaders) {
         
         loader->streamTrades([&](ITrade* trade) {
             
@@ -62,16 +60,12 @@ void StreamingTradeLoader::loadAndPrice(IScalarResultReceiver* resultReceiver) {
             if (pricers_.find(tradeType) == pricers_.end()) {
                 resultReceiver->addError(trade->getTradeId(), "No Pricing Engines available for this trade type");
             } else {
-                IPricingEngine* pricer = pricers_[tradeType];
+                IPricingEngine* pricer = pricers_[tradeType].get();
                 
                 pricer->price(trade, resultReceiver);
             }
             
             delete trade; 
         });
-    }
-    
-    for (auto loader : loaders) {
-        delete loader;
     }
 }

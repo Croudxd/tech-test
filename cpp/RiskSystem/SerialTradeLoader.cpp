@@ -16,14 +16,17 @@ std::vector<ITradeLoader*> SerialTradeLoader::getTradeLoaders() {
     return loaders;
 }
 
-std::vector<std::vector<ITrade*>> SerialTradeLoader::loadTrades() {
+TradeList SerialTradeLoader::loadTrades() {
     auto loaders = getTradeLoaders();
-    std::vector<std::vector<ITrade*>> result;
+    TradeList result;
     
     for (auto loader : loaders) {
-        result.push_back(loader->loadTrades());
+        TradeList trades = loader->loadTrades();
+        for (auto trade : trades)
+        {
+            result.add(trade);
+        }
     }
-    
     return result;
 }
 

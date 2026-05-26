@@ -7,10 +7,6 @@
 #include <chrono>
 #include <functional>
 
-//Small trim function to cut off any unseen special characters. 
-//Okay so assuming that we are not sure if every data point has a trail, the below would be safest.
-//perhaps we could do this faster by just cuttong off the end entity of the string however, we new definitvely
-//but that speed i think would be very small.
 
 BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     std::vector<std::string> items;
@@ -25,8 +21,6 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
         throw std::runtime_error("Invalid line format");
     }
     BondTrade* trade;
-    //Assuming only gov/corp
-    // Pretty crap check but again this assuming we have correct data and only gov/corp
     if (items[6][0] == 'C')
     {
         trade = new BondTrade(trim(items[6]), BondTrade::CorpBondTradeType);
@@ -35,8 +29,6 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     {
         trade = new BondTrade(trim(items[6]));
     }
-
-    // Always creating gov bonds.
     
     std::tm tm = {};
     std::istringstream dateStream(items[1]);
@@ -52,7 +44,7 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     return trade;
 }
 
-void BondTradeLoader::loadTradesFromFile(std::string filename, BondTradeList& tradeList) {
+void BondTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeList) {
     if (filename.empty()) {
         throw std::invalid_argument("Filename cannot be null");
     }
@@ -73,15 +65,10 @@ void BondTradeLoader::loadTradesFromFile(std::string filename, BondTradeList& tr
     }
 }
 
-std::vector<ITrade*> BondTradeLoader::loadTrades() {
-    BondTradeList tradeList;
+TradeList BondTradeLoader::loadTrades() {
+    TradeList tradeList;
     loadTradesFromFile(dataFile_, tradeList);
-    
-    std::vector<ITrade*> result;
-    for (size_t i = 0; i < tradeList.size(); ++i) {
-        result.push_back(tradeList[i]); 
-    }
-    return result;
+    return tradeList;
 }
 
 std::string BondTradeLoader::getDataFile() const {
