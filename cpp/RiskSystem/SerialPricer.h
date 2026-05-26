@@ -7,12 +7,13 @@
 #include "../Models/IScalarResultReceiver.h"
 #include "PricingConfigLoader.h"
 #include <map>
+#include <memory>
 #include <vector>
 #include <string>
 
 class SerialPricer {
 private:
-    std::map<std::string, IPricingEngine*> pricers_;
+    std::map<std::string, std::unique_ptr<IPricingEngine>> pricers_;
     void loadPricers();
     
 public:

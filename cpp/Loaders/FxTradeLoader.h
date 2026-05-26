@@ -3,14 +3,15 @@
 
 #include "ITradeLoader.h"
 #include "../Models/FxTrade.h"
+#include <memory>
 #include <string>
 #include <vector>
 
 class FxTradeLoader : public ITradeLoader {
 private:
-    static constexpr char separator = '\xAC';
+    static constexpr std::string_view separator = "\xC2\xAC";
     std::string dataFile_;
-    FxTrade* createTradeFromLine(std::string line); 
+    std::unique_ptr<ITrade> createTradeFromLine(std::string line); 
     void loadTradesFromFile(std::string filename, TradeList& tradeList); 
 
 public:
@@ -18,7 +19,7 @@ public:
     TradeList loadTrades() override;
     std::string getDataFile() const override;
     void setDataFile(const std::string& file) override;
-    void streamTrades(std::function<void(ITrade*)> onTradeLoaded) override;
+    void streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) override;
 };
 
 #endif // FXTRADELOADER_H

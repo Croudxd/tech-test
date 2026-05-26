@@ -22,9 +22,9 @@ TradeList SerialTradeLoader::loadTrades() {
     
     for (auto loader : loaders) {
         TradeList trades = loader->loadTrades();
-        for (auto trade : trades)
+        for (auto& trade : trades)
         {
-            result.add(trade);
+            result.add(std::move(trade));
         }
     }
     return result;

@@ -1,4 +1,5 @@
 #include "FxTradeLoader.h"
+#include <memory>
 #include <stdexcept>
 #include <fstream>
 #include <sstream>
@@ -6,31 +7,37 @@
 #include <ctime>
 #include <iomanip>
 #include <chrono>
+#include <utility>
 
-// NOTE: These methods are only here to allow the solution to compile prior to the test being completed.
 
-
-FxTrade* FxTradeLoader::createTradeFromLine(std::string line) {
+std::unique_ptr<ITrade> FxTradeLoader::createTradeFromLine(std::string line) {
     std::vector<std::string> items;
     std::stringstream ss(line);
     std::string item;
     
-    while (std::getline(ss, item, separator)) {
-        items.push_back(item);
+    std::string remaining = line;
+    size_t pos;
+    while ((pos = remaining.find(separator)) != std::string::npos) {
+        items.push_back(remaining.substr(0, pos));
+        remaining = remaining.substr(pos + separator.size());
+    }
+    items.push_back(remaining);
+    if (!items.empty() && items.back().back() == '\r') {
+        items.back().pop_back();
     }
     
     if (items.size() < 9) { 
         throw std::runtime_error("Invalid line format. Items found: " + std::to_string(items.size()) + " Line: " + line);
     }
-    FxTrade* trade;
+    std::unique_ptr<FxTrade> trade;
 
     if (items[0][2] == 'F')
     {
-        trade = new FxTrade(items[8], FxTrade::FxForwardTradeType);
+        trade = std::make_unique<FxTrade>(FxTrade(items[8], FxTrade::FxForwardTradeType));
     }
     else 
     {
-        trade = new FxTrade(items[8]);
+        trade = std::make_unique<FxTrade>(FxTrade(items[8])); 
     }
 
     std::tm tm = {};
@@ -70,7 +77,7 @@ void FxTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeLis
         } 
         if (line.find("END") == 0) break;
         else {
-            tradeList.add(createTradeFromLine(line));
+            tradeList.add(std::move(createTradeFromLine(line)));
         }
         lineCount++;
     }
@@ -90,7 +97,7 @@ void FxTradeLoader::setDataFile(const std::string& file) {
     dataFile_ = file;
 }
 
-void FxTradeLoader::streamTrades(std::function<void(ITrade*)> onTradeLoaded) {
+void FxTradeLoader::streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) {
     std::ifstream stream(dataFile_);
     
     if (!stream.is_open()) {
@@ -101,7 +108,7 @@ void FxTradeLoader::streamTrades(std::function<void(ITrade*)> onTradeLoaded) {
     while (std::getline(stream, line)) {
         if (isFirstLine) { isFirstLine = false; continue; }
         
-        ITrade* trade = createTradeFromLine(line); 
-        onTradeLoaded(trade);
+        std::unique_ptr<ITrade> trade = createTradeFromLine(line); 
+        onTradeLoaded(std::move(trade));
     }
 }

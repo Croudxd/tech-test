@@ -53,7 +53,7 @@ void StreamingTradeLoader::loadAndPrice(IScalarResultReceiver* resultReceiver) {
     
     for (auto& loader : loaders) {
         
-        loader->streamTrades([&](ITrade* trade) {
+        loader->streamTrades([&](std::unique_ptr<ITrade> trade) {
             
             std::string tradeType = trade->getTradeType();
             
@@ -62,10 +62,9 @@ void StreamingTradeLoader::loadAndPrice(IScalarResultReceiver* resultReceiver) {
             } else {
                 IPricingEngine* pricer = pricers_[tradeType].get();
                 
-                pricer->price(trade, resultReceiver);
+                pricer->price(trade.get(), resultReceiver);
             }
             
-            delete trade; 
         });
     }
 }

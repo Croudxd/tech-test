@@ -17,8 +17,8 @@ void setUpFx() {
     loader.setDataFile("Loaders/TradeData/FxTrades.dat");
     auto trades = loader.loadTrades();
     fxTradeList = new TradeList();
-    for (auto trade : trades) {
-        fxTradeList->add(trade);
+    for (auto& trade : trades) {
+        fxTradeList->add(std::move(trade));
     }
 }
 

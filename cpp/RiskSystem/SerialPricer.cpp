@@ -2,12 +2,9 @@
 #include "../Pricers/CorpBondPricingEngine.h"
 #include "../Pricers/FxPricingEngine.h"
 #include "../Pricers/GovBondPricingEngine.h"
+#include <memory>
 
 SerialPricer::~SerialPricer() {
-    for (auto& pair : pricers_) {
-        delete pair.second;
-    }
-    pricers_.clear();
 }
 
 void SerialPricer::loadPricers() {
@@ -20,13 +17,13 @@ void SerialPricer::loadPricers() {
         std::string tradeType = configItem.getTradeType();
 
         if (typeName == "HmxLabs.TechTest.Pricers.GovBondPricingEngine") {
-            pricers_[tradeType] = new GovBondPricingEngine();
+            pricers_[tradeType] = std::make_unique<GovBondPricingEngine>();
         } 
         else if (typeName == "HmxLabs.TechTest.Pricers.CorpBondPricingEngine") {
-            pricers_[tradeType] = new CorpBondPricingEngine();
+            pricers_[tradeType] = std::make_unique<CorpBondPricingEngine>();
         } 
         else if (typeName == "HmxLabs.TechTest.Pricers.FxPricingEngine") {
-            pricers_[tradeType] = new FxPricingEngine();
+            pricers_[tradeType] = std::make_unique<FxPricingEngine>();
         }
     }
 }
@@ -42,7 +39,7 @@ void SerialPricer::price(const TradeList& trades,
             resultReceiver->addError(trade->getTradeId(), "No Pricing Engines available for this trade type");
             continue;
         }
-        IPricingEngine* pricer = pricers_[tradeType];
-        pricer->price(trade, resultReceiver);
+        IPricingEngine* pricer = pricers_[tradeType].get();
+        pricer->price(trade.get(), resultReceiver);
     }
 }

@@ -1,5 +1,6 @@
 #include "BondTradeLoader.h"
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <ctime>
@@ -8,7 +9,7 @@
 #include <functional>
 
 
-BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
+std::unique_ptr<ITrade> BondTradeLoader::createTradeFromLine(std::string line) {
     std::vector<std::string> items;
     std::stringstream ss(line);
     std::string item;
@@ -20,14 +21,14 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     if (items.size() < 7) { 
         throw std::runtime_error("Invalid line format");
     }
-    BondTrade* trade;
+    std::unique_ptr<ITrade> trade;
     if (items[6][0] == 'C')
     {
-        trade = new BondTrade(trim(items[6]), BondTrade::CorpBondTradeType);
+        trade = std::make_unique<BondTrade>(BondTrade(trim(items[6]), BondTrade::CorpBondTradeType));
     }
     else 
     {
-        trade = new BondTrade(trim(items[6]));
+        trade = std::make_unique<BondTrade>(BondTrade(trim(items[6])));
     }
     
     std::tm tm = {};
@@ -59,7 +60,7 @@ void BondTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeL
     while (std::getline(stream, line)) {
         if (lineCount == 0) {
         } else {
-            tradeList.add(createTradeFromLine(line));
+            tradeList.add(std::move(createTradeFromLine(line)));
         }
         lineCount++;
     }
@@ -79,7 +80,7 @@ void BondTradeLoader::setDataFile(const std::string& file) {
     dataFile_ = file;
 }
 
-void BondTradeLoader::streamTrades(std::function<void(ITrade*)> onTradeLoaded) {
+void BondTradeLoader::streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) {
     std::ifstream stream(dataFile_);
     if (!stream.is_open()) {
         throw std::runtime_error("Cannot open file: " + dataFile_);
@@ -94,8 +95,8 @@ void BondTradeLoader::streamTrades(std::function<void(ITrade*)> onTradeLoaded) {
             continue; 
         }
         
-        ITrade* trade = createTradeFromLine(line);
+        std::unique_ptr<ITrade> trade = createTradeFromLine(line);
         
-        onTradeLoaded(trade);
+        onTradeLoaded(std::move(trade));
     }
 }

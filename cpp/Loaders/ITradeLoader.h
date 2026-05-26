@@ -3,6 +3,7 @@
 
 #include "../Models/ITrade.h"
 #include "../Models/TradeList.h"
+#include <memory>
 #include <vector>
 #include <string>
 #include <functional>
@@ -18,7 +19,7 @@ public:
         auto end = str.find_last_not_of(" \t\r\n\xC2");
         return (end == std::string::npos) ? "" : str.substr(0, end + 1);
     }
-    virtual void streamTrades(std::function<void(ITrade*)> onTradeLoaded) = 0;
+    virtual void streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) = 0;
 };
 
 #endif // ITRADELOADER_H

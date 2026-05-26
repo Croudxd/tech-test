@@ -17,8 +17,8 @@ void setUp() {
     loader.setDataFile("Loaders/TradeData/BondTrades.dat");
     auto trades = loader.loadTrades();
     tradeList = new TradeList();
-    for (auto trade : trades) {
-        tradeList->add(trade);
+    for (auto& trade : trades) {
+        tradeList->add(std::move(trade));
     }
 }
 

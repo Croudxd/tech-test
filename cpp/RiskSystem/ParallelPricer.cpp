@@ -2,13 +2,10 @@
 #include "../Pricers/CorpBondPricingEngine.h"
 #include "../Pricers/FxPricingEngine.h"
 #include "../Pricers/GovBondPricingEngine.h"
+#include <memory>
 #include <stdexcept>
 
 ParallelPricer::~ParallelPricer() {
-    for (auto& pair : pricers_) {
-        delete pair.second;
-    }
-    pricers_.clear();
 }
 
 void ParallelPricer::loadPricers() {
@@ -21,46 +18,41 @@ void ParallelPricer::loadPricers() {
         std::string tradeType = configItem.getTradeType();
 
         if (typeName == "HmxLabs.TechTest.Pricers.GovBondPricingEngine") {
-            pricers_[tradeType] = new GovBondPricingEngine();
+            pricers_[tradeType] = std::make_unique<GovBondPricingEngine>(); 
         } 
         else if (typeName == "HmxLabs.TechTest.Pricers.CorpBondPricingEngine") {
-            pricers_[tradeType] = new CorpBondPricingEngine();
+            pricers_[tradeType] = std::make_unique<CorpBondPricingEngine>();
         } 
         else if (typeName == "HmxLabs.TechTest.Pricers.FxPricingEngine") {
-            pricers_[tradeType] = new FxPricingEngine();
+            pricers_[tradeType] = std::make_unique<FxPricingEngine>();
         }
     }
 }
 
-void ParallelPricer::price(const std::vector<std::vector<ITrade*>>& tradeContainers, 
+void ParallelPricer::price(TradeList& tradeContainers, 
                            IScalarResultReceiver* resultReceiver) {
     loadPricers(); 
     
     std::vector<std::future<void>> futures;
     std::mutex receiverMutex; 
     
-    for (const auto& tradeContainer : tradeContainers) {
-        for (ITrade* trade : tradeContainer) {
+    for (const auto& trade : tradeContainers) {
+        ITrade* rTrade = trade.get(); 
+        futures.push_back(std::async(std::launch::async, [this, rTrade, resultReceiver, &receiverMutex]() {
             
-            futures.push_back(std::async(std::launch::async, [this, trade, resultReceiver, &receiverMutex]() {
-                
-                std::string tradeType = trade->getTradeType();
-                
-                if (pricers_.find(tradeType) == pricers_.end()) {
-                    std::lock_guard<std::mutex> lock(receiverMutex);
-                    resultReceiver->addError(trade->getTradeId(), "No Pricing Engines available");
-                    return;
-                }
-                
-                IPricingEngine* pricer = pricers_[tradeType];
-                
-                
+            std::string tradeType = rTrade->getTradeType();
+            
+            if (pricers_.find(tradeType) == pricers_.end()) {
                 std::lock_guard<std::mutex> lock(receiverMutex);
-                pricer->price(trade, resultReceiver);
-                
-            }));
+                resultReceiver->addError(rTrade->getTradeId(), "No Pricing Engines available");
+                return;
+            }
+            
+            IPricingEngine* pricer = pricers_[tradeType].get();
+            pricer->price(rTrade, resultReceiver);
+            
+        }));
         }
-    }
     
     for (auto& f : futures) {
         f.get();

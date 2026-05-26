@@ -12,14 +12,14 @@ class BondTradeLoader : public ITradeLoader {
 private:
     static constexpr char separator = ',';
     std::string dataFile_;
-    BondTrade* createTradeFromLine(std::string line);
+    std::unique_ptr<ITrade> createTradeFromLine(std::string line);
     void loadTradesFromFile(std::string filename, TradeList& tradeList);
     
 public:
     TradeList loadTrades() override;
     std::string getDataFile() const override;
     void setDataFile(const std::string& file) override;
-    void streamTrades(std::function<void(ITrade*)> onTradeLoaded) override;
+    void streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) override;
 };
 
 #endif // BONDTRADELOADER_H
