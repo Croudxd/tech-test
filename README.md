@@ -1,8 +1,8 @@
-# Edit:
+ Edit:
 - - -
 I went through and added unique_ptrs, this required changing 2 of the test cases. From Valgrind there are no memory leaks apart from some in the test files.
 ConsoleApp has no memory leaks.
-
+- - -
 
 Question 1:
 First problem was simple we just wasnt overloading the gov default variable, so simply added a check. Second was that there was trailing characters at the end of the strings, so i added a small function to check if there is, if so remove.
