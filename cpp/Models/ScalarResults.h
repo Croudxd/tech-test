@@ -4,6 +4,7 @@
 #include "IScalarResultReceiver.h"
 #include "ScalarResult.h"
 #include <map>
+#include <mutex>
 #include <vector>
 #include <optional>
 #include <string>
@@ -47,6 +48,7 @@ private:
     std::map<std::string, double> results_;
     std::map<std::string, std::string> errors_;
     std::vector<std::string> keys_;
+    mutable std::mutex mutex_;
 };
 
 #endif // SCALARRESULTS_H

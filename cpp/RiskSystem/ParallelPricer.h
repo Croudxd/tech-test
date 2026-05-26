@@ -17,8 +17,6 @@
 class ParallelPricer {
 private:
     std::map<std::string, std::unique_ptr<IPricingEngine>> pricers_;
-    std::mutex resultMutex_;
-    
     void loadPricers();
     
 public:

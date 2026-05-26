@@ -1,4 +1,5 @@
 #include "ScalarResults.h"
+#include <mutex>
 #include <stdexcept>
 
 ScalarResults::~ScalarResults() = default;
@@ -29,6 +30,7 @@ bool ScalarResults::containsTrade(const std::string& tradeId) const {
 }
 
 void ScalarResults::addResult(const std::string& tradeId, double result) {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (!containsTrade(tradeId)) {
         keys_.push_back(tradeId);
     }
@@ -36,6 +38,7 @@ void ScalarResults::addResult(const std::string& tradeId, double result) {
 }
 
 void ScalarResults::addError(const std::string& tradeId, const std::string& error) {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (!containsTrade(tradeId)) {
         keys_.push_back(tradeId);
     }

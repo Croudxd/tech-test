@@ -34,16 +34,14 @@ void ParallelPricer::price(TradeList& tradeContainers,
     loadPricers(); 
     
     std::vector<std::future<void>> futures;
-    std::mutex receiverMutex; 
     
     for (const auto& trade : tradeContainers) {
         ITrade* rTrade = trade.get(); 
-        futures.push_back(std::async(std::launch::async, [this, rTrade, resultReceiver, &receiverMutex]() {
+        futures.push_back(std::async(std::launch::async, [this, rTrade, resultReceiver]() {
             
             std::string tradeType = rTrade->getTradeType();
             
             if (pricers_.find(tradeType) == pricers_.end()) {
-                std::lock_guard<std::mutex> lock(receiverMutex);
                 resultReceiver->addError(rTrade->getTradeId(), "No Pricing Engines available");
                 return;
             }
