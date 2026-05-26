@@ -1,3 +1,9 @@
+# Edit:
+- - -
+I went through and added unique_ptrs, this required changing 2 of the test cases. From Valgrind there are no memory leaks apart from some in the test files.
+ConsoleApp has no memory leaks.
+
+
 Question 1:
 First problem was simple we just wasnt overloading the gov default variable, so simply added a check. Second was that there was trailing characters at the end of the strings, so i added a small function to check if there is, if so remove.
 
@@ -24,8 +30,3 @@ Okay, I pretty much understand whats happening here, Basically we are creating a
 Question 8:
 So i added the normal loadPricers function. And actually thinking about it now i could somehow put all this logic into one base class that all of the streaming/serial/parallel can inherit from, but repeating works for now. The price function simply calls the loadPricers() and then will generate a futures vector and a mutex for the reciever. We then loop over each trade and call a async thread on it which these thread will then return to the reciever, because there is only one mutex there is no chance of a race condition. Perhaps we could not use a mutex as its slow we could perhaps spin the thread.
 
-
-Edit:
-
-Tried to refactor all of the code from raw pointers to unique_ptrs, but the tests require the ability to copy, and in instructions i am not allowed to change test code.
-- So there is some memory leaks in terms of TradeLists, we cannot use a destructor because of the tests trying to double delete. The best way to fix this would be to use unique_ptr<ITrades> and change the test cases.
