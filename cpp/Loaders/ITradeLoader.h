@@ -12,14 +12,14 @@ class ITradeLoader {
 public:
     virtual ~ITradeLoader() = default;
     virtual TradeList loadTrades() = 0;
-    virtual std::string getDataFile() const = 0;
-    virtual void setDataFile(const std::string& file) = 0;
-    std::string trim(const std::string& str) 
+    virtual const std::string& getDataFile() const noexcept = 0;
+    virtual void setDataFile(const std::string& file) noexcept = 0;
+    static std::string trim(const std::string& str) 
     {
         auto end = str.find_last_not_of(" \t\r\n\xC2");
         return (end == std::string::npos) ? "" : str.substr(0, end + 1);
     }
-    virtual void streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) = 0;
+    virtual void streamTrades(const std::function<void(std::unique_ptr<ITrade>)>& onTradeLoaded) = 0;
 };
 
 #endif // ITRADELOADER_H

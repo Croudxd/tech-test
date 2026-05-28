@@ -10,18 +10,17 @@
 #include <utility>
 
 
-std::unique_ptr<ITrade> FxTradeLoader::createTradeFromLine(std::string line) {
+std::unique_ptr<ITrade> FxTradeLoader::createTradeFromLine(const std::string& line) {
     std::vector<std::string> items;
-    std::stringstream ss(line);
-    std::string item;
     
     std::string remaining = line;
-    size_t pos;
-    while ((pos = remaining.find(separator)) != std::string::npos) {
-        items.push_back(remaining.substr(0, pos));
-        remaining = remaining.substr(pos + separator.size());
+    size_t start = 0, pos;
+    while ((pos = line.find(separator, start)) != std::string::npos) {
+        items.push_back(remaining.substr(start, pos - start));
+        start = pos + separator.size();
     }
-    items.push_back(remaining);
+    items.push_back(line.substr(start));
+
     if (!items.empty() && items.back().back() == '\r') {
         items.back().pop_back();
     }
@@ -33,11 +32,11 @@ std::unique_ptr<ITrade> FxTradeLoader::createTradeFromLine(std::string line) {
 
     if (items[0][2] == 'F')
     {
-        trade = std::make_unique<FxTrade>(FxTrade(items[8], FxTrade::FxForwardTradeType));
+        trade = std::make_unique<FxTrade>(items[8], FxTrade::FxForwardTradeType);
     }
     else 
     {
-        trade = std::make_unique<FxTrade>(FxTrade(items[8])); 
+        trade = std::make_unique<FxTrade>(items[8]); 
     }
 
     std::tm tm = {};
@@ -58,7 +57,7 @@ std::unique_ptr<ITrade> FxTradeLoader::createTradeFromLine(std::string line) {
     return trade;
 }
 
-void FxTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeList) {
+void FxTradeLoader::loadTradesFromFile(const std::string& filename, TradeList& tradeList) {
     if (filename.empty()) {
         throw std::invalid_argument("Filename cannot be null");
     }
@@ -77,7 +76,7 @@ void FxTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeLis
         } 
         if (line.find("END") == 0) break;
         else {
-            tradeList.add(std::move(createTradeFromLine(line)));
+            tradeList.add(createTradeFromLine(line));
         }
         lineCount++;
     }
@@ -85,19 +84,19 @@ void FxTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeLis
 
 TradeList FxTradeLoader::loadTrades() {
     TradeList tradelist;
-    FxTradeLoader::loadTradesFromFile(dataFile_, tradelist);
+    loadTradesFromFile(dataFile_, tradelist);
     return tradelist;
 }
 
-std::string FxTradeLoader::getDataFile() const {
+const std::string& FxTradeLoader::getDataFile() const noexcept {
     return dataFile_;
 }
 
-void FxTradeLoader::setDataFile(const std::string& file) {
+void FxTradeLoader::setDataFile(const std::string& file) noexcept {
     dataFile_ = file;
 }
 
-void FxTradeLoader::streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) {
+void FxTradeLoader::streamTrades(const std::function<void(std::unique_ptr<ITrade>)>& onTradeLoaded) {
     std::ifstream stream(dataFile_);
     
     if (!stream.is_open()) {

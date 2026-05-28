@@ -11,15 +11,15 @@ class FxTradeLoader : public ITradeLoader {
 private:
     static constexpr std::string_view separator = "\xC2\xAC";
     std::string dataFile_;
-    std::unique_ptr<ITrade> createTradeFromLine(std::string line); 
-    void loadTradesFromFile(std::string filename, TradeList& tradeList); 
+    static std::unique_ptr<ITrade> createTradeFromLine(const std::string& line); 
+    void loadTradesFromFile(const std::string& filename, TradeList& tradeList); 
 
 public:
     FxTradeLoader() = default;
     TradeList loadTrades() override;
-    std::string getDataFile() const override;
-    void setDataFile(const std::string& file) override;
-    void streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) override;
+    const std::string& getDataFile() const noexcept override;
+    void setDataFile(const std::string& file) noexcept override;
+    void streamTrades(const std::function<void(std::unique_ptr<ITrade>)>& onTradeLoaded) override;
 };
 
 #endif // FXTRADELOADER_H

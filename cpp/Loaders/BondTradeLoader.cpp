@@ -9,7 +9,7 @@
 #include <functional>
 
 
-std::unique_ptr<ITrade> BondTradeLoader::createTradeFromLine(std::string line) {
+std::unique_ptr<ITrade> BondTradeLoader::createTradeFromLine(const std::string& line) {
     std::vector<std::string> items;
     std::stringstream ss(line);
     std::string item;
@@ -24,11 +24,11 @@ std::unique_ptr<ITrade> BondTradeLoader::createTradeFromLine(std::string line) {
     std::unique_ptr<ITrade> trade;
     if (items[6][0] == 'C')
     {
-        trade = std::make_unique<BondTrade>(BondTrade(trim(items[6]), BondTrade::CorpBondTradeType));
+        trade = std::make_unique<BondTrade>(trim(items[6]), BondTrade::CorpBondTradeType);
     }
     else 
     {
-        trade = std::make_unique<BondTrade>(BondTrade(trim(items[6])));
+        trade = std::make_unique<BondTrade>(trim(items[6]));
     }
     
     std::tm tm = {};
@@ -45,7 +45,7 @@ std::unique_ptr<ITrade> BondTradeLoader::createTradeFromLine(std::string line) {
     return trade;
 }
 
-void BondTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeList) {
+void BondTradeLoader::loadTradesFromFile(const std::string& filename, TradeList& tradeList) {
     if (filename.empty()) {
         throw std::invalid_argument("Filename cannot be null");
     }
@@ -60,7 +60,7 @@ void BondTradeLoader::loadTradesFromFile(std::string filename, TradeList& tradeL
     while (std::getline(stream, line)) {
         if (lineCount == 0) {
         } else {
-            tradeList.add(std::move(createTradeFromLine(line)));
+            tradeList.add(createTradeFromLine(line));
         }
         lineCount++;
     }
@@ -72,15 +72,15 @@ TradeList BondTradeLoader::loadTrades() {
     return tradeList;
 }
 
-std::string BondTradeLoader::getDataFile() const {
+const std::string& BondTradeLoader::getDataFile() const noexcept {
     return dataFile_;
 }
 
-void BondTradeLoader::setDataFile(const std::string& file) {
+void BondTradeLoader::setDataFile(const std::string& file) noexcept {
     dataFile_ = file;
 }
 
-void BondTradeLoader::streamTrades(std::function<void(std::unique_ptr<ITrade>)> onTradeLoaded) {
+void BondTradeLoader::streamTrades(const std::function<void(std::unique_ptr<ITrade>)>& onTradeLoaded) {
     std::ifstream stream(dataFile_);
     if (!stream.is_open()) {
         throw std::runtime_error("Cannot open file: " + dataFile_);
