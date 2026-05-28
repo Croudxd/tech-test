@@ -17,7 +17,6 @@ private:
     void loadPricers();
     
 public:
-    ~SerialPricer();
     void price(const TradeList& trades, 
                IScalarResultReceiver* resultReceiver);
 };

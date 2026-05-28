@@ -4,9 +4,6 @@
 #include "../Pricers/GovBondPricingEngine.h"
 #include <memory>
 
-SerialPricer::~SerialPricer() {
-}
-
 void SerialPricer::loadPricers() {
     PricingConfigLoader pricingConfigLoader;
     pricingConfigLoader.setConfigFile("./PricingConfig/PricingEngines.xml");
@@ -30,16 +27,16 @@ void SerialPricer::loadPricers() {
 
 void SerialPricer::price(const TradeList& trades, 
                          IScalarResultReceiver* resultReceiver) {
-    loadPricers();
+    if (pricers_.empty()) loadPricers();
     
     for (const auto& trade : trades) {
 
         std::string tradeType = trade->getTradeType();
-        if (pricers_.find(tradeType) == pricers_.end()) {
+        auto it = pricers_.find(tradeType);
+        if (it == pricers_.end()) {
             resultReceiver->addError(trade->getTradeId(), "No Pricing Engines available for this trade type");
             continue;
         }
-        IPricingEngine* pricer = pricers_[tradeType].get();
-        pricer->price(trade.get(), resultReceiver);
+        it->second->price(trade.get(), resultReceiver);
     }
 }
