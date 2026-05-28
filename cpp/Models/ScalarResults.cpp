@@ -1,6 +1,5 @@
 #include "ScalarResults.h"
 #include <mutex>
-#include <stdexcept>
 
 ScalarResults::~ScalarResults() = default;
 
@@ -9,20 +8,17 @@ std::optional<ScalarResult> ScalarResults::operator[](const std::string& tradeId
         return std::nullopt;
     }
 
-    std::optional<double> priceResult = std::nullopt;
-    std::optional<std::string> error = std::nullopt;
-
     auto resultIt = results_.find(tradeId);
-    if (resultIt != results_.end()) {
-        priceResult = resultIt->second;
-    }
-
     auto errorIt = errors_.find(tradeId);
-    if (errorIt != errors_.end()) {
-        error = errorIt->second;
+
+    if (resultIt == results_.end() && errorIt == errors_.end()) {
+        return std::nullopt;
     }
 
+    std::optional<double> priceResult = resultIt != results_.end() ? resultIt->second : std::optional<double>{};
+    std::optional<std::string> error = errorIt != errors_.end() ? errorIt->second : std::optional<std::string>{};
     return ScalarResult(tradeId, priceResult, error);
+
 }
 
 bool ScalarResults::containsTrade(const std::string& tradeId) const {
@@ -39,6 +35,7 @@ void ScalarResults::addResult(const std::string& tradeId, double result) {
 
 void ScalarResults::addError(const std::string& tradeId, const std::string& error) {
     std::lock_guard<std::mutex> lock(mutex_);
+    // If containsTrade is ever called without a lock, there will be a race condition.
     if (!containsTrade(tradeId)) {
         keys_.push_back(tradeId);
     }
