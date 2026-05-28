@@ -8,10 +8,10 @@ class PricingConfigLoader {
 private:
     std::string configFile_;
     PricingEngineConfig parseXml(const std::string& content);
-    
+    static std::string extractAttribute(const std::string& line, const std::string& attributeName); 
 public:
-    std::string getConfigFile() const;
-    void setConfigFile(const std::string& file);
+    const std::string& getConfigFile() const noexcept;
+    void setConfigFile(const std::string& file) noexcept;
     PricingEngineConfig loadConfig();
 };
 

@@ -4,15 +4,15 @@
 #include "../Models/BondTrade.h"
 #include "../Models/FxTrade.h"
 
-std::string PricingConfigLoader::getConfigFile() const {
+const std::string& PricingConfigLoader::getConfigFile() const noexcept {
     return configFile_;
 }
 
-void PricingConfigLoader::setConfigFile(const std::string& file) {
+void PricingConfigLoader::setConfigFile(const std::string& file) noexcept {
     configFile_ = file;
 }
 
-std::string extractAttribute(const std::string& line, const std::string& attributeName) {
+std::string PricingConfigLoader::extractAttribute(const std::string& line, const std::string& attributeName) {
     std::string searchStr = attributeName + "=\"";
     size_t startPos = line.find(searchStr);
     
@@ -32,11 +32,9 @@ std::string extractAttribute(const std::string& line, const std::string& attribu
 }
 
 PricingEngineConfig PricingConfigLoader::loadConfig() {
-    std::string filename = getConfigFile();
-    std::ifstream stream(filename);
-    
+    std::ifstream stream(getConfigFile());
     if (!stream.is_open()) {
-        throw std::runtime_error("Cannot open config file: " + filename);
+        throw std::runtime_error("Cannot open config file: " + getConfigFile());
     }
     
     PricingEngineConfig config; 
@@ -56,15 +54,19 @@ PricingEngineConfig PricingConfigLoader::loadConfig() {
         item.setTypeName(pricingEngine);
         item.setAssembly(assembly);
 
-        if (tradeType[0] == 'G')
+        if (tradeType.empty())
+        {
+            throw std::runtime_error("Trade type is empty check config file.");
+        }
+        else if (tradeType[0] == 'G')
         {
             item.setTradeType(BondTrade::GovBondTradeType);
         }
-        if (tradeType[0] == 'C')
+        else if (tradeType[0] == 'C')
         {
             item.setTradeType(BondTrade::CorpBondTradeType);
         }
-        if (tradeType[0] == 'F')
+        else if (tradeType[0] == 'F')
         {
             if (tradeType[2] == 'S')
             {
