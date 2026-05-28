@@ -20,9 +20,7 @@ private:
     void loadPricers();
     
 public:
-    ~ParallelPricer();
-    
-    void price(TradeList& tradeContainers, 
+    void price(const TradeList& tradeContainers, 
                IScalarResultReceiver* resultReceiver);
 };
 

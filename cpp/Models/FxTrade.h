@@ -18,7 +18,7 @@ public:
         }
     }
     
-    std::string getTradeType() const override {
+    const std::string& getTradeType() const override {
         return tradeType_;
     }
     

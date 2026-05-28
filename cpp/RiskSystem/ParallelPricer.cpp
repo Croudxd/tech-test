@@ -3,10 +3,7 @@
 #include "../Pricers/FxPricingEngine.h"
 #include "../Pricers/GovBondPricingEngine.h"
 #include <memory>
-#include <stdexcept>
 
-ParallelPricer::~ParallelPricer() {
-}
 
 void ParallelPricer::loadPricers() {
     PricingConfigLoader pricingConfigLoader;
@@ -29,9 +26,9 @@ void ParallelPricer::loadPricers() {
     }
 }
 
-void ParallelPricer::price(TradeList& tradeContainers, 
+void ParallelPricer::price(const TradeList& tradeContainers, 
                            IScalarResultReceiver* resultReceiver) {
-    loadPricers(); 
+    if (pricers_.empty()) loadPricers(); 
     
     std::vector<std::future<void>> futures;
     
@@ -41,12 +38,13 @@ void ParallelPricer::price(TradeList& tradeContainers,
             
             std::string tradeType = rTrade->getTradeType();
             
-            if (pricers_.find(tradeType) == pricers_.end()) {
+            auto it = pricers_.find(tradeType);
+            if (it == pricers_.end()) {
                 resultReceiver->addError(rTrade->getTradeId(), "No Pricing Engines available");
                 return;
             }
             
-            IPricingEngine* pricer = pricers_[tradeType].get();
+            IPricingEngine* pricer = it->second.get();
             pricer->price(rTrade, resultReceiver);
             
         }));

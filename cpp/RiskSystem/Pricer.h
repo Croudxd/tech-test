@@ -1,3 +1,6 @@
+#pragma once
+#ifndef PRICER_H 
+#define PRICER_H
 #include <map>
 #include <memory>
 #include <string>
@@ -17,8 +20,8 @@ class Pricer {
             PricingEngineConfig pricerConfig = pricingConfigLoader.loadConfig();
             
             for (const auto& configItem : pricerConfig) {
-                std::string typeName = configItem.getTypeName();
-                std::string tradeType = configItem.getTradeType();
+                const auto& typeName = configItem.getTypeName();
+                const auto& tradeType = configItem.getTradeType();
 
                 if (typeName == "HmxLabs.TechTest.Pricers.GovBondPricingEngine") {
                     pricers_[tradeType] = std::make_unique<GovBondPricingEngine>();
@@ -35,3 +38,6 @@ class Pricer {
 
         std::map<std::string, std::unique_ptr<IPricingEngine>> pricers_;
 };
+
+#endif // PRICER_H
+

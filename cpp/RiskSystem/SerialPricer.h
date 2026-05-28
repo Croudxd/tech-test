@@ -14,9 +14,6 @@
 
 
 class SerialPricer : Pricer {
-private:
-    std::map<std::string, std::unique_ptr<IPricingEngine>> pricers_;
-    
 public:
     void price(const TradeList& trades, 
                IScalarResultReceiver* resultReceiver);

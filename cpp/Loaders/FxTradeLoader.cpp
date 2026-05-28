@@ -13,10 +13,9 @@
 std::unique_ptr<ITrade> FxTradeLoader::createTradeFromLine(const std::string& line) {
     std::vector<std::string> items;
     
-    std::string remaining = line;
     size_t start = 0, pos;
     while ((pos = line.find(separator, start)) != std::string::npos) {
-        items.push_back(remaining.substr(start, pos - start));
+        items.push_back(line.substr(start, pos - start));
         start = pos + separator.size();
     }
     items.push_back(line.substr(start));

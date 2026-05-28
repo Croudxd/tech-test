@@ -14,7 +14,7 @@ public:
         }
     }
     
-    std::string getTradeId() const { return tradeId_; }
+    const std::string& getTradeId() const { return tradeId_; }
     std::optional<double> getResult() const { return result_; }
     std::optional<std::string> getError() const { return error_; }
     

@@ -4,10 +4,7 @@
 ScalarResults::~ScalarResults() = default;
 
 std::optional<ScalarResult> ScalarResults::operator[](const std::string& tradeId) const {
-    if (!containsTrade(tradeId)) {
-        return std::nullopt;
-    }
-
+    // Race condition also exists here if function is called but not locked.
     auto resultIt = results_.find(tradeId);
     auto errorIt = errors_.find(tradeId);
 
@@ -48,7 +45,7 @@ ScalarResults::Iterator& ScalarResults::Iterator::operator++() {
 }
 
 ScalarResult ScalarResults::Iterator::operator*() const {
-    std::string currentTradeId = parent_->keys_[index_];
+    const std::string& currentTradeId = parent_->keys_[index_];
     return parent_->operator[](currentTradeId).value();
 }
 

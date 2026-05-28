@@ -51,16 +51,19 @@ void BasePricingEngine::priceTrade(ITrade* trade, IScalarResultReceiver* resultR
     std::this_thread::sleep_for(std::chrono::milliseconds(delay_));
     double result = calculateResult();
     
-    std::string tradeId = trade->getTradeId();
+    const std::string& tradeId = trade->getTradeId();
     auto& tradesToError = getTradesToError();
     auto& tradesToWarn = getTradesToWarn();
     
-    if (tradesToError.find(tradeId) != tradesToError.end()) {
+    auto it = tradesToError.find(tradeId);
+    if (it != tradesToError.end()) {
         resultReceiver->addError(tradeId, tradesToError[tradeId]);
     } else {
         resultReceiver->addResult(tradeId, result);
-        if (tradesToWarn.find(tradeId) != tradesToWarn.end()) {
-            resultReceiver->addError(tradeId, tradesToWarn[tradeId]);
+
+        auto it = tradesToWarn.find(tradeId);
+        if (it != tradesToWarn.end()) {
+            resultReceiver->addError(tradeId, it->second);
         }
     }
     

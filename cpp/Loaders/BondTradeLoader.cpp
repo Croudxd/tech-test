@@ -59,6 +59,8 @@ void BondTradeLoader::loadTradesFromFile(const std::string& filename, TradeList&
     std::string line;
     while (std::getline(stream, line)) {
         if (lineCount == 0) {
+            lineCount++;
+            continue;
         } else {
             tradeList.add(createTradeFromLine(line));
         }

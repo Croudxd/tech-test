@@ -5,13 +5,13 @@
 
 class PricingEngineConfigItem {
 public:
-    std::string getTradeType() const { return tradeType_; }
+    const std::string& getTradeType() const { return tradeType_; }
     void setTradeType(const std::string& type) { tradeType_ = type; }
     
-    std::string getAssembly() const { return assembly_; }
+    const std::string& getAssembly() const { return assembly_; }
     void setAssembly(const std::string& assembly) { assembly_ = assembly; }
     
-    std::string getTypeName() const { return typeName_; }
+    const std::string& getTypeName() const { return typeName_; }
     void setTypeName(const std::string& typeName) { typeName_ = typeName; }
     
 private:
